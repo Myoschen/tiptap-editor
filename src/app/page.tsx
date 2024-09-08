@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { TiptapEditor } from '@/components/editor'
+import { TiptapEditor } from '@/components/editor/tiptap-editor'
 import { useDebounceCallback } from '@/hooks/use-debounce-callback'
 
 const DELAY = 500 as const

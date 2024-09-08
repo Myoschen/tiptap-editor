@@ -3,13 +3,13 @@
 import './styles.css'
 
 import { type Editor, EditorContent, useEditor } from '@tiptap/react'
-import { Bold, Highlighter, Italic, List, ListOrdered, Redo, Strikethrough, UnderlineIcon, Undo } from 'lucide-react'
+import { Bold, CaseSensitive, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Highlighter, Italic, LetterText, List, ListOrdered, Redo, Strikethrough, Underline, Undo } from 'lucide-react'
 
+import { EditorButton } from './components/editor-button'
+import { EditorDropdownMenu } from './components/editor-dropdown-menu'
+import { EditorSeparator } from './components/editor-separator'
+import { EditorToggleButton } from './components/editor-toggle-button'
 import { createExtensions } from './extensions'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Toggle } from '@/components/ui/toggle'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 interface TiptapProps {
@@ -45,7 +45,7 @@ export function TiptapEditor({
   })
 
   return (
-    <div className={cn('flex flex-col rounded-lg border bg-background shadow-sm focus-within:border-primary', className)}>
+    <div className={cn('flex flex-col rounded-lg border bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background', className)}>
       {editor && <EditorToolbar editor={editor} />}
       <EditorContent className={cn('flex flex-1 flex-col', editorContentClassName)} editor={editor} />
     </div>
@@ -57,194 +57,133 @@ interface EditorToolbarProps {
 }
 
 function EditorToolbar({ editor }: EditorToolbarProps) {
+  const styles = [
+    {
+      icon: CaseSensitive,
+      label: 'Paragraph',
+      shortcut: ['⌘', '⌥', '0'],
+      onClick: () => editor.chain().focus().setParagraph().run(),
+    },
+    {
+      icon: Heading1,
+      label: 'Heading 1',
+      shortcut: ['⌘', '⌥', '1'],
+      active: editor.isActive('heading', { level: 1 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+    },
+    {
+      icon: Heading2,
+      label: 'Heading 2',
+      shortcut: ['⌘', '⌥', '2'],
+      active: editor.isActive('heading', { level: 2 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+    },
+    {
+      icon: Heading3,
+      label: 'Heading 3',
+      shortcut: ['⌘', '⌥', '3'],
+      active: editor.isActive('heading', { level: 3 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+    },
+    {
+      icon: Heading4,
+      label: 'Heading 4',
+      shortcut: ['⌘', '⌥', '4'],
+      active: editor.isActive('heading', { level: 4 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
+    },
+    {
+      icon: Heading5,
+      label: 'Heading 5',
+      shortcut: ['⌘', '⌥', '5'],
+      active: editor.isActive('heading', { level: 5 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 5 }).run(),
+    },
+    {
+      icon: Heading6,
+      label: 'Heading 6',
+      shortcut: ['⌘', '⌥', '6'],
+      active: editor.isActive('heading', { level: 6 }),
+      onClick: () => editor.chain().focus().toggleHeading({ level: 6 }).run(),
+    },
+    {
+      icon: ListOrdered,
+      label: 'Ordered List',
+      shortcut: ['⌘', '⇧', '7'],
+      active: editor.isActive('orderedList'),
+      onClick: () => editor.chain().focus().toggleOrderedList().run(),
+    },
+    {
+      icon: List,
+      label: 'Bullet List',
+      shortcut: ['⌘', '⇧', '8'],
+      active: editor.isActive('bulletList'),
+      onClick: () => editor.chain().focus().toggleBulletList().run(),
+    },
+  ]
+
+  const variants = [
+    {
+      icon: Bold,
+      label: 'Bold',
+      shortcut: ['⌘', 'B'],
+      active: editor.isActive('bold'),
+      onStateChange: () => editor.chain().focus().toggleBold().run(),
+    },
+    {
+      icon: Italic,
+      label: 'Italic',
+      shortcut: ['⌘', 'I'],
+      active: editor.isActive('italic'),
+      onStateChange: () => editor.chain().focus().toggleItalic().run(),
+    },
+    {
+      icon: Strikethrough,
+      label: 'Strikethrough',
+      shortcut: ['⌘', '⇧', 'S'],
+      active: editor.isActive('strike'),
+      onStateChange: () => editor.chain().focus().toggleStrike().run(),
+    },
+    {
+      icon: Underline,
+      label: 'Underline',
+      shortcut: ['⌘', 'U'],
+      active: editor.isActive('underline'),
+      onStateChange: () => editor.chain().focus().toggleUnderline().run(),
+    },
+    {
+      icon: Highlighter,
+      label: 'Highlight',
+      shortcut: ['⌘', '⇧', 'H'],
+      active: editor.isActive('highlight'),
+      onStateChange: () => editor.chain().focus().toggleHighlight().run(),
+    },
+  ]
+
+  const actions = [
+    {
+      icon: Undo,
+      label: 'Undo',
+      shortcut: ['⌘', 'Z'],
+      disabled: !editor.can().chain().focus().undo().run(),
+      onClick: () => editor.chain().focus().undo().run(),
+    },
+    {
+      icon: Redo,
+      label: 'Redo',
+      shortcut: ['⌘', 'Y'],
+      disabled: !editor.can().chain().focus().redo().run(),
+      onClick: () => editor.chain().focus().redo().run(),
+    },
+  ]
+
   return (
     <div className="flex h-12 items-center gap-x-1 overflow-x-auto border-b px-2 shadow-sm">
-      {/* Bold */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle bold"
-              pressed={editor.isActive('bold')}
-              onPressedChange={() => editor.chain().focus().toggleBold().run()}
-            >
-              <Bold className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Bold</span>
-          <kbd className="font-sans text-xs font-medium">⌘ B</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Italic */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle italic"
-              pressed={editor.isActive('italic')}
-              onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-            >
-              <Italic className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Italic</span>
-          <kbd className="font-sans text-xs font-medium">⌘ I</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Strikethrough */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle strikethrough"
-              pressed={editor.isActive('strike')}
-              onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-            >
-              <Strikethrough className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Strikethrough</span>
-          <kbd className="font-sans text-xs font-medium">⌘ ⇧ S</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Underline */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle underline"
-              pressed={editor.isActive('underline')}
-              onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
-            >
-              <UnderlineIcon className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Underline</span>
-          <kbd className="font-sans text-xs font-medium">⌘ U</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Highlight */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle highlight"
-              pressed={editor.isActive('highlight')}
-              onPressedChange={() => editor.chain().focus().toggleHighlight().run()}
-            >
-              <Highlighter className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Highlight</span>
-          <kbd className="font-sans text-xs font-medium">⌘ ⇧ H</kbd>
-        </TooltipContent>
-      </Tooltip>
-      <Separator className="h-6" orientation="vertical" />
-      {/* Ordered List */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle ordered list"
-              pressed={editor.isActive('orderedList')}
-              onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-            >
-              <ListOrdered className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Ordered List</span>
-          <kbd className="font-sans text-xs font-medium">⌘ ⇧ 7</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Bullet List */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <div>
-            <Toggle
-              aria-label="Toggle bullet list"
-              pressed={editor.isActive('bulletList')}
-              onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-            >
-              <List className="size-4" />
-            </Toggle>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Bullet List</span>
-          <kbd className="font-sans text-xs font-medium">⌘ ⇧ 8</kbd>
-        </TooltipContent>
-      </Tooltip>
-      <Separator className="h-6" orientation="vertical" />
-      {/* Undo */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(ev) => {
-              ev.preventDefault()
-              editor.chain().focus().undo().run()
-            }}
-            disabled={!editor.can().chain().focus().undo().run()}
-          >
-            <Undo className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Undo</span>
-          <kbd className="font-sans text-xs font-medium">⌘ Z</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* Redo */}
-      <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(ev) => {
-              ev.preventDefault()
-              editor.chain().focus().redo().run()
-            }}
-            disabled={!editor.can().chain().focus().redo().run()}
-          >
-            <Redo className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="mr-1">Redo</span>
-          <kbd className="font-sans text-xs font-medium">⌘ Y</kbd>
-        </TooltipContent>
-      </Tooltip>
-      {/* TODO Table */}
-      {/* <Tooltip>
-        <TooltipTrigger asChild={true}>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(ev) => {
-              ev.preventDefault()
-              editor.commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-            }}
-          >
-            <TableIcon className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          Insert Table
-        </TooltipContent>
-      </Tooltip> */}
+      <EditorDropdownMenu icon={LetterText} label="Text Style" items={styles} />
+      <EditorSeparator />
+      {variants.map((variant, index) => (<EditorToggleButton key={index}{...variant} />))}
+      <EditorSeparator />
+      {actions.map((action, index) => (<EditorButton key={index}{...action} />))}
     </div>
   )
 }
