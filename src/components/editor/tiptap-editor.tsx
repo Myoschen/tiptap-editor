@@ -4,7 +4,7 @@ import './styles.css'
 
 import { useState } from 'react'
 import { type Editor, EditorContent, useEditor } from '@tiptap/react'
-import { Bold, CaseSensitive, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Highlighter, Image, Italic, LetterText, List, ListOrdered, Redo, Strikethrough, Underline, Undo } from 'lucide-react'
+import { Bold, CaseSensitive, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Highlighter, Image, Italic, LetterText, List, ListOrdered, Redo, Strikethrough, Table, Underline, Undo } from 'lucide-react'
 
 import { EditorButton } from './components/editor-button'
 import { EditorDropdownMenu } from './components/editor-dropdown-menu'
@@ -188,6 +188,10 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
       <EditorSeparator />
       {variants.map((variant, index) => (<EditorToggleButton key={index}{...variant} />))}
       <EditorSeparator />
+      <div className="inline-flex size-8 items-center justify-center opacity-50">
+        <Table className="size-4" />
+      </div>
+      {/* <EditorTable onInsert={options => editor.commands.insertTable(options)} /> */}
       <EditorImage onInsert={src => editor.chain().focus().setImage({ src }).run()} />
       <EditorSeparator />
       {actions.map((action, index) => (<EditorButton key={index}{...action} />))}
@@ -195,10 +199,14 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
   )
 }
 
-function EditorImage({ onInsert }: { onInsert: (src: string) => void }) {
+interface EditorImage {
+  onInsert: (src: string) => void
+}
+
+function EditorImage({ onInsert }: EditorImage) {
   const [url, setUrl] = useState('')
 
-  const handleSetImage = () => {
+  const handleInsert = () => {
     if (url.trim() === '') return
     onInsert(url)
     setUrl('')
@@ -217,7 +225,60 @@ function EditorImage({ onInsert }: { onInsert: (src: string) => void }) {
       <Button
         className="min-w-20 self-end"
         size="sm"
-        onClick={handleSetImage}
+        onClick={handleInsert}
+      >
+        Insert
+      </Button>
+    </EditorPopover>
+  )
+}
+
+type TableOptions = {
+  rows: number
+  cols: number
+}
+
+interface EditorTableProps {
+  onInsert: (options: TableOptions) => void
+}
+
+// FIXME table styles
+function EditorTable({ onInsert }: EditorTableProps) {
+  const [options, setOptions] = useState<TableOptions>({ cols: 0, rows: 0 })
+
+  const clear = () => {
+    setOptions({ cols: 0, rows: 0 })
+  }
+
+  const handleInsert = () => {
+    if (isNaN(options.cols) || isNaN(options.rows)) {
+      clear()
+      return
+    }
+    onInsert(options)
+    clear()
+  }
+
+  return (
+    <EditorPopover
+      icon={Table}
+      label="Table"
+      contentClassName="flex flex-col gap-y-2"
+    >
+      <div>
+        <div>
+          <Label htmlFor="url">Col</Label>
+          <Input id="url" value={options.cols} onChange={ev => setOptions(p => ({ ...p, cols: +ev.target.value }))} />
+        </div>
+        <div>
+          <Label htmlFor="url">Row</Label>
+          <Input id="url" value={options.rows} onChange={ev => setOptions(p => ({ ...p, rows: +ev.target.value }))} />
+        </div>
+      </div>
+      <Button
+        className="min-w-20 self-end"
+        size="sm"
+        onClick={handleInsert}
       >
         Insert
       </Button>
