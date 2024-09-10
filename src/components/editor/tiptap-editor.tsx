@@ -2,14 +2,19 @@
 
 import './styles.css'
 
+import { useState } from 'react'
 import { type Editor, EditorContent, useEditor } from '@tiptap/react'
-import { Bold, CaseSensitive, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Highlighter, Italic, LetterText, List, ListOrdered, Redo, Strikethrough, Underline, Undo } from 'lucide-react'
+import { Bold, CaseSensitive, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Highlighter, Image, Italic, LetterText, List, ListOrdered, Redo, Strikethrough, Underline, Undo } from 'lucide-react'
 
 import { EditorButton } from './components/editor-button'
 import { EditorDropdownMenu } from './components/editor-dropdown-menu'
+import { EditorPopover } from './components/editor-popover'
 import { EditorSeparator } from './components/editor-separator'
 import { EditorToggleButton } from './components/editor-toggle-button'
 import { createExtensions } from './extensions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 interface TiptapProps {
@@ -183,7 +188,39 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
       <EditorSeparator />
       {variants.map((variant, index) => (<EditorToggleButton key={index}{...variant} />))}
       <EditorSeparator />
+      <EditorImage onInsert={src => editor.chain().focus().setImage({ src }).run()} />
+      <EditorSeparator />
       {actions.map((action, index) => (<EditorButton key={index}{...action} />))}
     </div>
+  )
+}
+
+function EditorImage({ onInsert }: { onInsert: (src: string) => void }) {
+  const [url, setUrl] = useState('')
+
+  const handleSetImage = () => {
+    if (url.trim() === '') return
+    onInsert(url)
+    setUrl('')
+  }
+
+  return (
+    <EditorPopover
+      icon={Image}
+      label="Image"
+      contentClassName="flex flex-col gap-y-2"
+    >
+      <div>
+        <Label htmlFor="url">URL</Label>
+        <Input id="url" value={url} onChange={ev => setUrl(ev.target.value)} />
+      </div>
+      <Button
+        className="min-w-20 self-end"
+        size="sm"
+        onClick={handleSetImage}
+      >
+        Insert
+      </Button>
+    </EditorPopover>
   )
 }
